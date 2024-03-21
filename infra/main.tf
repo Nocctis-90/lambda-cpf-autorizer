@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_lambda_function" "lambda_function" {
-  filename      = "${lambda_zip_file}"
+  filename      = "${path.module}/${lambda_zip_file}"
   function_name = "AutenticacaoClienteHandler"
   role          = aws_iam_role.lambda_role.arn
   handler       = "lambda_function.lambda_handler"
