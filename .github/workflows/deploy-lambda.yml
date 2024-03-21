@@ -40,9 +40,7 @@ jobs:
           terraform_version: 1.6.2
 
       - name: Terraform Init
-        working-directory: infra/
         run: terraform init
 
       - name: Terraform Apply
-        working-directory: infra/
         run: terraform apply -auto-approve
