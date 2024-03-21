@@ -34,13 +34,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.6.2
+    - name: Checkout Repository
+      uses: actions/checkout@v2
 
-      - name: Terraform Init
-        run: terraform init
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
+    - name: Install Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.6.2
+
+    - name: Terraform Init
+      run: terraform init
+    
+    - name: Terraform Plan
+      run: terraform plan infra/
+    
+    - name: Terraform Apply
+      run: terraform apply -auto-approve terraform/
