@@ -11,7 +11,7 @@ resource "aws_lambda_function" "lambda_function" {
 }
 
 resource "aws_iam_role" "lambda_role" {
-  name = "lambda_execution_role_cpf"
+  name = "lambda_execution_role_cpf_authorizer"
 
   assume_role_policy = <<EOF
 {
