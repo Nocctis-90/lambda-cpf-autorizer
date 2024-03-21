@@ -1,100 +1,38 @@
-name: Deploy AWS Lambda
+name: Deploy Lambda Function
 
 on:
   push:
     branches:
       - main
-    
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Go
-      uses: actions/setup-go@v4.1.0
-      with:
-        go-version: '1.21.3'
-  
-    - name: Initialize Go Module
-      run: |
-        go mod init github.com/pedroph23/app-fastfood-lambda # Inicializa o módulo Go na pasta "app"
-  
-    - name: Download Dependencies
-      run: |
-          cd app
-          go mod tidy
-          go mod download  # Baixa todas as dependências do projeto
-
-    - name: Build Go
-      run: |
-        cd app
-        GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o main  # Compilar seu código Go
-        echo "GitHub Workspace: $GITHUB_WORKSPACE"
-        mkdir $GITHUB_WORKSPACE/lambda
-        cp main $GITHUB_WORKSPACE/lambda  # Copiar o arquivo binário para a pasta "app"
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: lambda-package
-        path: '${{ github.workspace }}/lambda'
-
-    - name: Run Go Tests
-      run: |
-        cd app
-        go test  # Executar seus testes Go
-
-
   deploy:
-    needs: [build]
     runs-on: ubuntu-latest
 
     steps:
-    
-    - name: Setup AWS CLI
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1  # Substitua pela sua região desejada
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
 
-    - name: Download Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: lambda-package
-        path: '${{ github.workspace }}/lambda'
+      - name: Install Dependencies
+        run: |
+          pip install -r app/deps.txt
 
-    - name: Create Lambda Deployment Package
-      run: |
-        cd lambda
-        zip -r lambda-deployment-package.zip . -i main
-        pwd
-        ls -la
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.6.2
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: latest
+      - name: Terraform Init
+        run: terraform init terraform/
 
-    - name: Terraform Init
-      run: |
-        cd infra
-        terraform init 
-        terraform validate
-
-    - name: Terraform Plan
-      run: |
-        cd infra
-        terraform plan -input=false -var="TF_LAMBDA_ZIP_PATH=${{ github.workspace }}/lambda/lambda-deployment-package.zip" -out=tfplan
-
-    - name: Terraform Apply
-      run: |
-        cd infra
-        terraform apply -input=false -var="TF_LAMBDA_ZIP_PATH=${{ github.workspace }}/lambda/lambda-deployment-package.zip" -auto-approve
-      
+      - name: Terraform Apply
+        run: terraform apply -auto-approve infra/
+        env:
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+          TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          TF_VAR_aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
