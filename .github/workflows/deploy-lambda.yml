@@ -59,8 +59,9 @@ jobs:
       run: terraform init
     
     - name: Terraform Plan
-      working-directory: infra/
-      run: terraform plan
+      run: |
+        cd infra
+        terraform plan -input=false -var="TF_LAMBDA_ZIP_PATH=${{ github.workspace }}/lambda/authorizer.zip" -out=tfplan
     
     - name: Terraform Apply
       continue-on-error: true
