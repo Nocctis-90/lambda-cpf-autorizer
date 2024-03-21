@@ -1,3 +1,6 @@
+provider "aws" {
+  region = "us-east-1" # Substitua pela sua região
+}
 
 resource "aws_lambda_function" "lambda_function" {
   filename      = "${path.module}/../lambda/lambda_function.py"
