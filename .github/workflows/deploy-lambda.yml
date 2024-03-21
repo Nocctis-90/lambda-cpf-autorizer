@@ -27,7 +27,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install -r app/deps.txt
+          pip install -r lambda/deps.txt
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v1
