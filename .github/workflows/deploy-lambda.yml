@@ -49,6 +49,11 @@ jobs:
       with:
         terraform_version: 1.6.2
 
+    - name: Create Lambda Deployment Package
+      run: |
+        cd lambda/
+        zip -r authorizer.zip .
+
     - name: Terraform Init
       working-directory: infra/
       run: terraform init
@@ -59,4 +64,4 @@ jobs:
     
     - name: Terraform Apply
       working-directory: infra/
-      run: terraform apply -auto-approve 
+      run: terraform apply -auto-approve -var "lambda_zip_file=../lambda/authorizer.zip" 
