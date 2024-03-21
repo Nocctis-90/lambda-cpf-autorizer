@@ -44,10 +44,13 @@ jobs:
         terraform_version: 1.6.2
 
     - name: Terraform Init
+      working-directory: infra/
       run: terraform init
     
     - name: Terraform Plan
-      run: terraform plan infra/
+      working-directory: infra/
+      run: terraform plan
     
     - name: Terraform Apply
-      run: terraform apply -auto-approve terraform/
+      working-directory: infra/
+      run: terraform apply -auto-approve 
